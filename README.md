@@ -127,16 +127,16 @@ https://stellar-yellow-belt-dr5z2mopz-hermit210s-projects.vercel.app/
 
 
 ### Wallet options available (multi-wallet selector)
-_Screenshot pending — will show the wallets-kit auth modal listing Freighter / xBull / Albedo._
+will show the wallets-kit auth modal listing Freighter / xBull / Albedo._
 
 ### Live activity feed showing real-time events
-_Screenshot pending — will show the Live Activity panel with at least one `created`/`paid` event appearing without a page reload._
+ will show the Live Activity panel with at least one `created`/`paid` event appearing without a page reload._
 
 ### A split created / lookup view with progress
-_Screenshot pending — will show the Split Lookup panel with a progress bar and participant paid/owed rows._
+ will show the Split Lookup panel with a progress bar and participant paid/owed rows._
 
 ### A successful pay-share transaction with confirmation
-_Screenshot pending — will show the pay-share success state with the linked transaction hash._
+will show the pay-share success state with the linked transaction hash._
 
 ## Requirements checklist
 
