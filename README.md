@@ -112,11 +112,19 @@ npm run preview
 
 ## Live demo
 
-_Not deployed yet — placeholder for a future Vercel (or similar) deployment link._
+https://stellar-yellow-belt-dr5z2mopz-hermit210s-projects.vercel.app/
 
 ## Screenshots
 
-> Screenshots below demonstrate the required states: the multi-wallet selector, live event feed, a split with progress, and a confirmed pay-share transaction.
+<img width="1600" height="850" alt="image" src="https://github.com/user-attachments/assets/f466c6d0-80ca-45d7-b8ae-a92620c3648e" />
+
+<img width="1600" height="744" alt="image" src="https://github.com/user-attachments/assets/e38b5f75-3699-4e9d-b063-45b29560e051" />
+
+<img width="1600" height="841" alt="image" src="https://github.com/user-attachments/assets/62e1203e-d047-4466-866f-d6c32c9e94c0" />
+
+<img width="1600" height="892" alt="image" src="https://github.com/user-attachments/assets/6d0a7707-4166-4443-88fc-9fbb7902dbd1" />
+
+
 
 ### Wallet options available (multi-wallet selector)
 _Screenshot pending — will show the wallets-kit auth modal listing Freighter / xBull / Albedo._
@@ -151,10 +159,10 @@ _Screenshot pending — will show the pay-share success state with the linked tr
 ✅ `src/lib/events.ts` polls Soroban RPC `getEvents` for this contract's split topics every 6s, cursor-paginated so only new events are appended; `LiveActivity.tsx` cleans up its polling timer on unmount
 
 **7. Screenshots**
-⬜ Pending manual browser testing (see slots above)
+DONE 
 
 **8. Live demo link**
-⬜ Optional — not deployed yet
+DONE 
 
 ## Notes
 
