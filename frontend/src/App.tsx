@@ -72,8 +72,8 @@ function App() {
     }
   };
 
-  const handleDisconnect = () => {
-    disconnectWallet();
+  const handleDisconnect = async () => {
+    await disconnectWallet();
     setPublicKey(null);
     setNetwork(null);
     setCreateState(idleState);

@@ -9,7 +9,7 @@ import {
   rpc,
   xdr,
 } from "@stellar/stellar-sdk";
-import { signTransaction, getNetworkDetails } from "@stellar/freighter-api";
+import { ensureTestnet, signWithWallet } from "./wallet";
 
 // ---- Deployed contract + network config (Stellar Testnet only) ----
 export const CONTRACT_ID = "CAF7HV6V6J7FUYHTGX5RIZIYGE4SXMZEDQOF4432AIN7256O45573IJ3";
@@ -48,18 +48,6 @@ function describeContractError(raw: string): string {
   return raw;
 }
 
-async function ensureTestnet(): Promise<void> {
-  const networkDetails = await getNetworkDetails();
-  if (networkDetails.error) {
-    throw new Error(networkDetails.error.message);
-  }
-  if (networkDetails.networkPassphrase !== TESTNET_PASSPHRASE) {
-    throw new Error(
-      `Freighter is set to "${networkDetails.network}", not Testnet. Switch back to Test Net before continuing.`
-    );
-  }
-}
-
 async function pollTransaction(hash: string): Promise<rpc.Api.GetTransactionResponse> {
   let response = await rpcServer.getTransaction(hash);
   const start = Date.now();
@@ -76,7 +64,8 @@ async function pollTransaction(hash: string): Promise<rpc.Api.GetTransactionResp
 /**
  * Simulates a contract call. For read-only calls, returns the simulated
  * result directly. For write calls, signs the assembled transaction with
- * Freighter, submits it, and polls until it confirms.
+ * whichever wallet is active in the wallets-kit, submits it, and polls
+ * until it confirms.
  */
 async function callContract(
   source: string,
@@ -108,15 +97,8 @@ async function callContract(
 
   const preparedTx = rpc.assembleTransaction(tx, simulation).build();
 
-  const signResult = await signTransaction(preparedTx.toXDR(), {
-    address: source,
-    networkPassphrase: TESTNET_PASSPHRASE,
-  });
-  if (signResult.error) {
-    throw new Error(signResult.error.message);
-  }
-
-  const signedTx = TransactionBuilder.fromXDR(signResult.signedTxXdr, TESTNET_PASSPHRASE);
+  const signedTxXdr = await signWithWallet(preparedTx.toXDR(), source);
+  const signedTx = TransactionBuilder.fromXDR(signedTxXdr, TESTNET_PASSPHRASE);
   const sendResult = await rpcServer.sendTransaction(signedTx);
   if (sendResult.status === "ERROR") {
     throw new Error(describeContractError(JSON.stringify(sendResult.errorResult)));

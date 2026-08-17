@@ -1,74 +1,90 @@
 import {
-  isConnected,
-  isAllowed,
-  setAllowed,
-  requestAccess,
-  getAddress,
-  getNetworkDetails,
-} from "@stellar/freighter-api";
-import { Networks } from "@stellar/stellar-sdk";
+  Networks,
+  StellarWalletsKit,
+  SwkAppLightTheme,
+  type SwkAppTheme,
+} from "@creit.tech/stellar-wallets-kit";
+import { AlbedoModule } from "@creit.tech/stellar-wallets-kit/modules/albedo";
+import { FreighterModule } from "@creit.tech/stellar-wallets-kit/modules/freighter";
+import { xBullModule } from "@creit.tech/stellar-wallets-kit/modules/xbull";
 
 export const TESTNET_PASSPHRASE = Networks.TESTNET;
 
-/** Checks whether the Freighter browser extension is installed at all. */
-export async function checkFreighterInstalled(): Promise<boolean> {
-  const result = await isConnected();
-  return !result.error;
+// A light touch on the kit's built-in modal so it doesn't feel like a
+// foreign widget dropped onto the warm/orange app theme, without having to
+// build a custom wallet-select UI of our own.
+const theme: SwkAppTheme = {
+  ...SwkAppLightTheme,
+  primary: "#c2410c",
+  "primary-foreground": "#fff8f2",
+  "border-radius": "10px",
+  "font-family": "Inter, system-ui, sans-serif",
+};
+
+let initialized = false;
+
+function ensureInit(): void {
+  if (initialized) return;
+  StellarWalletsKit.init({
+    modules: [new FreighterModule(), new xBullModule(), new AlbedoModule()],
+    network: Networks.TESTNET,
+    theme,
+  });
+  initialized = true;
 }
 
 /**
- * Connects to Freighter: requests the user's permission (if not already
- * granted) and returns their public key + the network Freighter is set to.
+ * Every wallets-kit module (Freighter, xBull, Albedo) implements the same
+ * `getNetwork(): Promise<{ network, networkPassphrase }>` contract per
+ * ModuleInterface, so this guard works uniformly across whichever wallet the
+ * user picked in the auth modal — not just Freighter.
+ */
+export async function ensureTestnet(): Promise<void> {
+  ensureInit();
+  const networkDetails = await StellarWalletsKit.getNetwork();
+  if (networkDetails.networkPassphrase !== TESTNET_PASSPHRASE) {
+    throw new Error(
+      `Wallet is set to "${networkDetails.network}", not Testnet. Switch it to Testnet and reconnect.`
+    );
+  }
+}
+
+/**
+ * Opens the wallets-kit auth modal (wallet picker), sets the chosen wallet
+ * as active, and requests its address. Then verifies that wallet reports
+ * Testnet before returning.
  */
 export async function connectWallet(): Promise<{
   publicKey: string;
   network: string;
 }> {
-  const installed = await checkFreighterInstalled();
-  if (!installed) {
-    throw new Error(
-      "Freighter wallet extension not found. Install it from freighter.app and refresh the page."
-    );
-  }
+  ensureInit();
 
-  const allowed = await isAllowed();
-  if (!allowed.isAllowed) {
-    const setAllowedResult = await setAllowed();
-    if (setAllowedResult.error) {
-      throw new Error(setAllowedResult.error.message);
-    }
-  }
+  const { address } = await StellarWalletsKit.authModal();
 
-  const access = await requestAccess();
-  if (access.error) {
-    throw new Error(access.error.message);
-  }
-
-  const addressResult = await getAddress();
-  if (addressResult.error) {
-    throw new Error(addressResult.error.message);
-  }
-
-  const networkDetails = await getNetworkDetails();
-  if (networkDetails.error) {
-    throw new Error(networkDetails.error.message);
-  }
-
+  const networkDetails = await StellarWalletsKit.getNetwork();
   if (networkDetails.networkPassphrase !== TESTNET_PASSPHRASE) {
     throw new Error(
-      `Freighter is set to "${networkDetails.network}". Switch Freighter to Test Net in its network settings and reconnect.`
+      `That wallet is set to "${networkDetails.network}". Switch it to Testnet in the wallet's own settings and reconnect.`
     );
   }
 
-  return { publicKey: addressResult.address, network: networkDetails.network };
+  return { publicKey: address, network: networkDetails.network };
 }
 
-/**
- * "Disconnecting" a Freighter session is a client-side concept only -
- * Freighter itself doesn't expose a revoke call, so we just clear local state.
- */
-export function disconnectWallet(): void {
-  // No SDK-level teardown is needed; the caller clears its own React state.
+export async function disconnectWallet(): Promise<void> {
+  ensureInit();
+  await StellarWalletsKit.disconnect();
+}
+
+/** Signs a built transaction XDR with whichever wallet is currently active in the kit. */
+export async function signWithWallet(xdr: string, address: string): Promise<string> {
+  ensureInit();
+  const result = await StellarWalletsKit.signTransaction(xdr, {
+    address,
+    networkPassphrase: TESTNET_PASSPHRASE,
+  });
+  return result.signedTxXdr;
 }
 
 /** Basic format check before we even try to build a transaction. */

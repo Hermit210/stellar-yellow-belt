@@ -27,10 +27,11 @@ export default function WalletPanel({
 
       {!publicKey ? (
         <div className="wallet-empty">
-          <p>Connect Freighter to create splits, look them up, and pay your share.</p>
+          <p>Connect a wallet to create splits, look them up, and pay your share.</p>
           <button className="btn btn-primary" onClick={onConnect} disabled={connecting}>
-            {connecting ? "Connecting…" : "Connect Freighter"}
+            {connecting ? "Connecting…" : "Connect Wallet"}
           </button>
+          <p className="field-hint">Supports Freighter, xBull, and Albedo — pick one in the popup.</p>
           {connectError && <p className="field-error">{connectError}</p>}
         </div>
       ) : (
