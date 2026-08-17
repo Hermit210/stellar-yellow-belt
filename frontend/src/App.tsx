@@ -5,6 +5,7 @@ import { createSplit, getRecentSplits, getSplit, payShare, type Split } from "./
 import WalletPanel from "./components/WalletPanel";
 import CreateSplitForm from "./components/CreateSplitForm";
 import SplitLookup from "./components/SplitLookup";
+import LiveActivity from "./components/LiveActivity";
 import TxFeedback, { type TxFeedbackStatus } from "./components/TxFeedback";
 
 interface ActionState {
@@ -181,23 +182,27 @@ function App() {
           errorMessage={createState.message}
         />
 
-        <SplitLookup
-          lookupId={lookupId}
-          onLookupIdChange={setLookupId}
-          onLookup={handleLookup}
-          disabled={!walletConnected}
-          loading={splitLoading}
-          error={splitError}
-          split={split}
-          recentSplits={recentSplits}
-          onSelectRecent={handleSelectRecent}
-          publicKey={publicKey}
-          payStatus={payState.status}
-          payHash={payState.hash}
-          payError={payState.message}
-          paySubmitting={payState.status === "pending"}
-          onPayShare={handlePayShare}
-        />
+        <div className="panel-grid panel-grid-lower">
+          <SplitLookup
+            lookupId={lookupId}
+            onLookupIdChange={setLookupId}
+            onLookup={handleLookup}
+            disabled={!walletConnected}
+            loading={splitLoading}
+            error={splitError}
+            split={split}
+            recentSplits={recentSplits}
+            onSelectRecent={handleSelectRecent}
+            publicKey={publicKey}
+            payStatus={payState.status}
+            payHash={payState.hash}
+            payError={payState.message}
+            paySubmitting={payState.status === "pending"}
+            onPayShare={handlePayShare}
+          />
+
+          <LiveActivity currentAddress={publicKey} />
+        </div>
       </main>
 
       <footer className="app-footer">

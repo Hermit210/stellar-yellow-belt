@@ -99,7 +99,8 @@ body {
   .tx-feedback,
   .tx-dot-success,
   .btn-sending,
-  .progress-fill {
+  .progress-fill,
+  .live-dot {
     animation: none;
   }
 }
@@ -204,8 +205,9 @@ body {
   padding: 24px;
 }
 
-.split-lookup-panel {
-  margin-top: 20px;
+.panel-grid-lower {
+  margin-top: 24px;
+  align-items: start;
 }
 
 .panel-title {
@@ -534,6 +536,79 @@ body {
   border-top: 1px dashed var(--panel-border);
   padding-top: 16px;
   margin-top: 4px;
+}
+
+/* Live activity */
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.18);
+  animation: live-dot-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes live-dot-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.activity-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.activity-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  animation: tx-feedback-in 200ms ease;
+}
+
+.activity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.activity-dot-created {
+  background: var(--accent-b);
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.18);
+}
+
+.activity-dot-paid {
+  background: var(--success);
+  box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.18);
+}
+
+.activity-text {
+  margin: 0 0 2px;
+  font-size: 0.88rem;
+}
+
+.activity-tx-link {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.activity-tx-link:hover {
+  color: var(--accent-b);
+  text-decoration: underline;
 }
 
 /* Transaction feedback */
