@@ -1,0 +1,21 @@
+# Rust / contract build artifacts
+/contract/target
+/frontend/node_modules
+/frontend/dist
+/frontend/dist-ssr
+
+# Logs
+*.log
+npm-debug.log*
+
+# Env files
+.env
+.env.*
+!.env.example
+
+# Editor/OS
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.db
