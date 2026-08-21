@@ -116,27 +116,25 @@ https://stellar-yellow-belt-dr5z2mopz-hermit210s-projects.vercel.app/
 
 ## Screenshots
 
-<img width="1600" height="850" alt="image" src="https://github.com/user-attachments/assets/f466c6d0-80ca-45d7-b8ae-a92620c3648e" />
-
-<img width="1600" height="744" alt="image" src="https://github.com/user-attachments/assets/e38b5f75-3699-4e9d-b063-45b29560e051" />
-
-<img width="1600" height="841" alt="image" src="https://github.com/user-attachments/assets/62e1203e-d047-4466-866f-d6c32c9e94c0" />
-
-<img width="1600" height="892" alt="image" src="https://github.com/user-attachments/assets/6d0a7707-4166-4443-88fc-9fbb7902dbd1" />
-
-
-
 ### Wallet options available (multi-wallet selector)
-will show the wallets-kit auth modal listing Freighter / xBull / Albedo._
+The wallets-kit auth modal listing Freighter / xBull / Albedo, with a live Freighter connection-request popup open alongside it.
 
-### Live activity feed showing real-time events
- will show the Live Activity panel with at least one `created`/`paid` event appearing without a page reload._
+![Wallet options modal](docs/screenshots/wallet-options.png)
 
-### A split created / lookup view with progress
- will show the Split Lookup panel with a progress bar and participant paid/owed rows._
+### Wallet connected, ready to create a split
+The wallet panel showing a connected testnet address, next to the Create a split form.
 
-### A successful pay-share transaction with confirmation
-will show the pay-share success state with the linked transaction hash._
+![Wallet connected](docs/screenshots/wallet-connected.png)
+
+### Confirming a transaction in the wallet
+Freighter's Confirm Transaction popup during a `create_split` call, with the app mid-submission behind it.
+
+![Confirm transaction](docs/screenshots/confirm-transaction.png)
+
+### Split created, with live activity update
+The success state after `create_split`, showing the returned transaction hash and the new split appearing in the Live Activity feed without a page reload.
+
+![Split created](docs/screenshots/split-created.png)
 
 ## Requirements checklist
 
@@ -147,7 +145,7 @@ will show the pay-share success state with the linked transaction hash._
 ✅ Project description, setup instructions, contract address, example tx hash, screenshot slots, requirements checklist (this file)
 
 **3. Git history**
-✅ 4+ meaningful, atomic commits (`git log --oneline | wc -l`) — contract+frontend, multi-wallet, real-time events, docs, each as their own commit
+✅ 10+ meaningful, atomic commits (`git log --oneline | wc -l`) — contract+frontend, multi-wallet, real-time events, test coverage, error handling, docs, each as their own commit
 
 **4. Multi-wallet integration**
 ✅ Freighter, xBull, and Albedo via `@creit.tech/stellar-wallets-kit`, with a uniform testnet network guard across all three (verified against the kit's `ModuleInterface` — every module implements `getNetwork()` identically, not just Freighter)
@@ -159,10 +157,10 @@ will show the pay-share success state with the linked transaction hash._
 ✅ `src/lib/events.ts` polls Soroban RPC `getEvents` for this contract's split topics every 6s, cursor-paginated so only new events are appended; `LiveActivity.tsx` cleans up its polling timer on unmount
 
 **7. Screenshots**
-DONE 
+✅ Real image files committed under `docs/screenshots/` and embedded above (not just external links) — see [Screenshots](#screenshots)
 
 **8. Live demo link**
-DONE 
+✅ See [Live demo](#live-demo) — note: if the linked Vercel deployment prompts for Vercel SSO instead of loading the app, it's a preview deployment with Deployment Protection on; promote it to a public Production deployment (Vercel dashboard → Project → Settings → Deployment Protection) and update the link above
 
 ## Notes
 
