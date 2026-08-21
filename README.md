@@ -162,6 +162,15 @@ The success state after `create_split`, showing the returned transaction hash an
 **8. Live demo link**
 ✅ https://stellar-yellow-belt-mu.vercel.app/ — public Production deployment, no Vercel SSO wall
 
+**9. Contract called from the frontend**
+✅ Every read and write goes straight from the browser to the deployed contract over Soroban RPC — no backend proxy. See `callContract()` / `createSplit()` / `payShare()` / `getSplit()` / `getRecentSplits()` in `frontend/src/lib/contract.ts`, invoked from `App.tsx`.
+
+**10. Required error types handled (wallet not found, rejected, insufficient balance)**
+✅ Each gets a distinct, actionable message instead of a raw SDK/Horizon error — see `describeWalletError()` in `frontend/src/lib/wallet.ts` (no compatible wallet / user declined) and the unfunded-account catch plus `tx_insufficient_balance` handling in `describeContractError()` and `callContract()` in `frontend/src/lib/contract.ts`.
+
+**11. Transaction status visible (pending / success / fail)**
+✅ `TxFeedback.tsx` renders all three states for both `create_split` and `pay_share`; pending is further split into "waiting for your signature" vs "submitting to Soroban RPC" via the `onStage` callback in `frontend/src/lib/contract.ts`.
+
 ## Notes
 
 - This app only ever targets **Stellar Testnet** — every wallet module's network is checked before connecting and again before signing.
