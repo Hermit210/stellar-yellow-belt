@@ -1,7 +1,15 @@
 import { useCallback, useState } from "react";
 import "./App.css";
 import { connectWallet, disconnectWallet } from "./lib/wallet";
-import { createSplit, getRecentSplits, getSplit, payShare, type Split } from "./lib/contract";
+import {
+  createSplit,
+  getRecentSplits,
+  getSplit,
+  payShare,
+  TX_STAGE_TEXT,
+  type Split,
+  type TxStage,
+} from "./lib/contract";
 import WalletPanel from "./components/WalletPanel";
 import CreateSplitForm from "./components/CreateSplitForm";
 import SplitLookup from "./components/SplitLookup";
@@ -12,6 +20,7 @@ interface ActionState {
   status: TxFeedbackStatus;
   hash?: string;
   message?: string;
+  stage?: TxStage;
 }
 
 const idleState: ActionState = { status: "idle" };
@@ -92,9 +101,16 @@ function App() {
   ) => {
     if (!publicKey) return;
 
-    setCreateState({ status: "pending" });
+    setCreateState({ status: "pending", stage: "signing" });
     try {
-      const { id, hash } = await createSplit(publicKey, description, totalAmount, participants, shares);
+      const { id, hash } = await createSplit(
+        publicKey,
+        description,
+        totalAmount,
+        participants,
+        shares,
+        (stage) => setCreateState({ status: "pending", stage })
+      );
       setCreateState({ status: "success", hash });
       refreshRecent(publicKey);
       setLookupId(id.toString());
@@ -117,9 +133,11 @@ function App() {
   const handlePayShare = async (amount: bigint) => {
     if (!publicKey || !split) return;
 
-    setPayState({ status: "pending" });
+    setPayState({ status: "pending", stage: "signing" });
     try {
-      const { hash } = await payShare(publicKey, split.id, amount);
+      const { hash } = await payShare(publicKey, split.id, amount, (stage) =>
+        setPayState({ status: "pending", stage })
+      );
       setPayState({ status: "success", hash });
       lookupSplit(publicKey, split.id.toString());
     } catch (err: any) {
@@ -176,7 +194,7 @@ function App() {
 
         <TxFeedback
           status={createState.status}
-          pendingText="Waiting on your signature, then Soroban RPC."
+          pendingText={createState.stage ? TX_STAGE_TEXT[createState.stage] : "Preparing transaction…"}
           successText="Split created"
           hash={createState.hash}
           errorMessage={createState.message}
@@ -197,6 +215,7 @@ function App() {
             payStatus={payState.status}
             payHash={payState.hash}
             payError={payState.message}
+            payStage={payState.stage}
             paySubmitting={payState.status === "pending"}
             onPayShare={handlePayShare}
           />

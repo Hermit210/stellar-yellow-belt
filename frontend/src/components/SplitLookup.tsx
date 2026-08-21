@@ -1,5 +1,5 @@
 import { type FormEvent } from "react";
-import type { Split } from "../lib/contract";
+import { TX_STAGE_TEXT, type Split, type TxStage } from "../lib/contract";
 import PayShareForm from "./PayShareForm";
 import TxFeedback, { type TxFeedbackStatus } from "./TxFeedback";
 
@@ -17,6 +17,7 @@ interface SplitLookupProps {
   payStatus: TxFeedbackStatus;
   payHash?: string;
   payError?: string;
+  payStage?: TxStage;
   paySubmitting: boolean;
   onPayShare: (amount: bigint) => void;
 }
@@ -39,6 +40,7 @@ export default function SplitLookup({
   payStatus,
   payHash,
   payError,
+  payStage,
   paySubmitting,
   onPayShare,
 }: SplitLookupProps) {
@@ -134,7 +136,7 @@ export default function SplitLookup({
               <PayShareForm remaining={myRemaining} submitting={paySubmitting} onPay={onPayShare} />
               <TxFeedback
                 status={payStatus}
-                pendingText="Waiting on your signature, then Soroban RPC."
+                pendingText={payStage ? TX_STAGE_TEXT[payStage] : "Preparing transaction…"}
                 successText="Payment recorded"
                 hash={payHash}
                 errorMessage={payError}

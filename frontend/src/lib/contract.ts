@@ -74,11 +74,19 @@ async function pollTransaction(hash: string): Promise<rpc.Api.GetTransactionResp
  * whichever wallet is active in the wallets-kit, submits it, and polls
  * until it confirms.
  */
+export type TxStage = "signing" | "submitting";
+
+export const TX_STAGE_TEXT: Record<TxStage, string> = {
+  signing: "Waiting for your signature in your wallet…",
+  submitting: "Signed — submitting to Soroban RPC and waiting for confirmation…",
+};
+
 async function callContract(
   source: string,
   method: string,
   args: xdr.ScVal[],
-  write: boolean
+  write: boolean,
+  onStage?: (stage: TxStage) => void
 ): Promise<{ value: unknown; hash?: string }> {
   await ensureTestnet();
 
@@ -111,7 +119,10 @@ async function callContract(
 
   const preparedTx = rpc.assembleTransaction(tx, simulation).build();
 
+  onStage?.("signing");
   const signedTxXdr = await signWithWallet(preparedTx.toXDR(), source);
+
+  onStage?.("submitting");
   const signedTx = TransactionBuilder.fromXDR(signedTxXdr, TESTNET_PASSPHRASE);
   const sendResult = await rpcServer.sendTransaction(signedTx);
   if (sendResult.status === "ERROR") {
@@ -153,7 +164,8 @@ export async function createSplit(
   description: string,
   totalAmount: bigint,
   participants: string[],
-  shares: bigint[]
+  shares: bigint[],
+  onStage?: (stage: TxStage) => void
 ): Promise<{ id: bigint; hash: string }> {
   const args = [
     new Address(source).toScVal(),
@@ -162,21 +174,22 @@ export async function createSplit(
     xdr.ScVal.scvVec(participants.map((p) => new Address(p).toScVal())),
     xdr.ScVal.scvVec(shares.map((s) => nativeToScVal(s, { type: "i128" }))),
   ];
-  const { value, hash } = await callContract(source, "create_split", args, true);
+  const { value, hash } = await callContract(source, "create_split", args, true, onStage);
   return { id: value as bigint, hash: hash! };
 }
 
 export async function payShare(
   source: string,
   splitId: bigint,
-  amount: bigint
+  amount: bigint,
+  onStage?: (stage: TxStage) => void
 ): Promise<{ hash: string }> {
   const args = [
     nativeToScVal(splitId, { type: "u64" }),
     new Address(source).toScVal(),
     nativeToScVal(amount, { type: "i128" }),
   ];
-  const { hash } = await callContract(source, "pay_share", args, true);
+  const { hash } = await callContract(source, "pay_share", args, true, onStage);
   return { hash: hash! };
 }
 
