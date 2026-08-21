@@ -112,7 +112,7 @@ npm run preview
 
 ## Live demo
 
-https://stellar-yellow-belt-dr5z2mopz-hermit210s-projects.vercel.app/
+https://stellar-yellow-belt-mu.vercel.app/
 
 ## Screenshots
 
@@ -160,7 +160,7 @@ The success state after `create_split`, showing the returned transaction hash an
 ✅ Real image files committed under `docs/screenshots/` and embedded above (not just external links) — see [Screenshots](#screenshots)
 
 **8. Live demo link**
-✅ See [Live demo](#live-demo) — note: if the linked Vercel deployment prompts for Vercel SSO instead of loading the app, it's a preview deployment with Deployment Protection on; promote it to a public Production deployment (Vercel dashboard → Project → Settings → Deployment Protection) and update the link above
+✅ https://stellar-yellow-belt-mu.vercel.app/ — public Production deployment, no Vercel SSO wall
 
 ## Notes
 
