@@ -99,3 +99,68 @@ fn create_split_rejects_mismatched_lengths() {
 
     assert!(result.is_err());
 }
+
+#[test]
+fn create_split_rejects_empty_participants() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let contract_id = env.register(SplitTrackerContract, ());
+    let client = SplitTrackerContractClient::new(&env, &contract_id);
+
+    let creator = Address::generate(&env);
+    let participants: soroban_sdk::Vec<Address> = vec![&env];
+    let shares: soroban_sdk::Vec<i128> = vec![&env];
+
+    let result = client.try_create_split(
+        &creator,
+        &String::from_str(&env, "Nobody owes anything"),
+        &0i128,
+        &participants,
+        &shares,
+    );
+
+    assert_eq!(result, Err(Ok(SplitError::EmptyParticipants)));
+}
+
+#[test]
+fn pay_share_rejects_overpayment() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let contract_id = env.register(SplitTrackerContract, ());
+    let client = SplitTrackerContractClient::new(&env, &contract_id);
+
+    let creator = Address::generate(&env);
+    let alice = Address::generate(&env);
+
+    let participants = vec![&env, alice.clone()];
+    let shares = vec![&env, 100i128];
+
+    let split_id = client.create_split(
+        &creator,
+        &String::from_str(&env, "Overpay test"),
+        &100i128,
+        &participants,
+        &shares,
+    );
+
+    let result = client.try_pay_share(&split_id, &alice, &150i128);
+    assert_eq!(result, Err(Ok(SplitError::OverpaidShare)));
+
+    // Confirm the rejected overpayment didn't partially apply.
+    let (_, paid) = client.get_split_progress(&split_id);
+    assert_eq!(paid, 0);
+}
+
+#[test]
+fn get_split_rejects_unknown_id() {
+    let env = Env::default();
+    env.mock_all_auths();
+
+    let contract_id = env.register(SplitTrackerContract, ());
+    let client = SplitTrackerContractClient::new(&env, &contract_id);
+
+    let result = client.try_get_split(&999u64);
+    assert!(result.is_err());
+}
