@@ -45,6 +45,13 @@ function describeContractError(raw: string): string {
     const code = Number(match[1]);
     return SPLIT_ERROR_MESSAGES[code] ?? `Contract error #${code}.`;
   }
+
+  // Horizon/Soroban result codes for an account that can't cover the
+  // network fee (or, for a brand-new testnet account, isn't funded at all).
+  if (/insufficient.?balance|tx_insufficient_balance/i.test(raw)) {
+    return "This wallet doesn't have enough testnet XLM to cover the network fee.";
+  }
+
   return raw;
 }
 
@@ -75,7 +82,14 @@ async function callContract(
 ): Promise<{ value: unknown; hash?: string }> {
   await ensureTestnet();
 
-  const account = await rpcServer.getAccount(source);
+  let account;
+  try {
+    account = await rpcServer.getAccount(source);
+  } catch {
+    throw new Error(
+      `This account isn't funded on Testnet yet. Fund it at https://friendbot.stellar.org/?addr=${source} and try again.`
+    );
+  }
   const contract = new Contract(CONTRACT_ID);
   const tx = new TransactionBuilder(account, {
     fee: BASE_FEE,

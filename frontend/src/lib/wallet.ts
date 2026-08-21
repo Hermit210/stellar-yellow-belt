@@ -60,7 +60,12 @@ export async function connectWallet(): Promise<{
 }> {
   ensureInit();
 
-  const { address } = await StellarWalletsKit.authModal();
+  let address: string;
+  try {
+    ({ address } = await StellarWalletsKit.authModal());
+  } catch (err) {
+    throw new Error(describeWalletError(err));
+  }
 
   const networkDetails = await StellarWalletsKit.getNetwork();
   if (networkDetails.networkPassphrase !== TESTNET_PASSPHRASE) {
@@ -80,14 +85,40 @@ export async function disconnectWallet(): Promise<void> {
 /** Signs a built transaction XDR with whichever wallet is currently active in the kit. */
 export async function signWithWallet(xdr: string, address: string): Promise<string> {
   ensureInit();
-  const result = await StellarWalletsKit.signTransaction(xdr, {
-    address,
-    networkPassphrase: TESTNET_PASSPHRASE,
-  });
-  return result.signedTxXdr;
+  try {
+    const result = await StellarWalletsKit.signTransaction(xdr, {
+      address,
+      networkPassphrase: TESTNET_PASSPHRASE,
+    });
+    return result.signedTxXdr;
+  } catch (err) {
+    throw new Error(describeWalletError(err));
+  }
 }
 
 /** Basic format check before we even try to build a transaction. */
 export function isValidStellarAddress(address: string): boolean {
   return /^G[A-Z2-7]{55}$/.test(address.trim());
+}
+
+/**
+ * Wallet extensions and the wallets-kit surface failures as plain JS Errors
+ * with inconsistent, module-specific wording (e.g. Freighter says "User
+ * declined access", xBull/Albedo phrase rejection differently). Recognizes
+ * the two failure shapes actually distinct from contract logic errors —
+ * no compatible wallet installed, and the user declining a request in
+ * their wallet — and gives each a consistent, actionable message.
+ */
+export function describeWalletError(err: unknown): string {
+  const raw = err instanceof Error ? err.message : String(err);
+
+  if (/not installed|no.*wallet.*(found|available)|not available/i.test(raw)) {
+    return "No compatible wallet extension was found. Install Freighter, xBull, or Albedo, then try again.";
+  }
+
+  if (/reject|declin|denied|cancel/i.test(raw)) {
+    return "Request declined in your wallet. Try again and approve the prompt to continue.";
+  }
+
+  return raw;
 }
